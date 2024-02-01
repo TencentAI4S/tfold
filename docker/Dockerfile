@@ -22,8 +22,6 @@ RUN wget https://repo.continuum.io/miniconda/Miniconda3-py38_4.11.0-Linux-x86_64
  && bash ./miniconda.sh -b -p ./miniconda \
  && rm ./miniconda.sh
 
-
-
 RUN wget  https://github.com/soedinglab/MMseqs2/releases/download/14-7e284/mmseqs-linux-avx2.tar.gz -O ~/mmseqs-linux-avx2.tar.gz \
  && tar xvfz ~/mmseqs-linux-avx2.tar.gz \
     && rm ~/mmseqs-linux-avx2.tar.gz
@@ -55,6 +53,8 @@ RUN wget https://github.com/aqlaboratory/openfold/archive/refs/tags/v1.0.1.zip -
     && cd .. \
     && rm -rf openfold
 
+RUN git clone https://github.com/TencentAI4S/tfold.git ~/tfold
 
+WORKDIR ~/tfold
 CMD [ "/bin/bash" ]
 
