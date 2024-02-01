@@ -55,6 +55,6 @@ RUN wget https://github.com/aqlaboratory/openfold/archive/refs/tags/v1.0.1.zip -
 
 RUN git clone https://github.com/TencentAI4S/tfold.git ~/tfold
 
-WORKDIR ~/tfold
+WORKDIR /root/tfold
 CMD [ "/bin/bash" ]
 
