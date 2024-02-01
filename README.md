@@ -34,7 +34,7 @@ If you have any questions, please contact the tFold team at fandiwu@tencent.com
 ###
 1. Clone the package
 ```shell
-git clone https://github.com/TencentAILabHealthcare/tFold.git
+git clone https://github.com/TencentAI4S/tFold.git
 cd tFold
 ```
 
