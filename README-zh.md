@@ -106,7 +106,21 @@ python projects/tfold_ag/predict.py --pid_fpath=examples/prot_ids.design.txt --f
 ```
 ## Citing tFold
 
-If you use tfold in your research, please cite our paper
+If you use tFold in your research, please cite our paper
+
+```BibTeX
+@article{wu2024fast,
+  title={Fast and accurate modeling and design of antibody-antigen complex using tFold},
+  author={Wu, Fandi and Zhao, Yu and Wu, Jiaxiang and Jiang, Biaobin and He, Bing and Huang, Longkai and Qin, Chenchen and Yang, Fan and Huang, Ningqiao and Xiao, Yang and others},
+  journal={bioRxiv},
+  pages={2024--02},
+  year={2024},
+  publisher={Cold Spring Harbor Laboratory}
+}
+```
+
+and old version of tFold-Ab
+
 ```BibTeX
 @article{wu2022tfold,
   title={tFold-ab: fast and accurate antibody structure prediction without sequence homologs},
