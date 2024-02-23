@@ -77,11 +77,3 @@ if [ ! -f COLABDB_READY ]; then
   touch COLABDB_READY
 fi
 
-
-if [ ! -f PDB_MMCIF_READY ]; then
-  mkdir -p pdb/divided
-  mkdir -p pdb/obsolete
-  rsync -rlpt -v -z --delete --port=${PDB_PORT} ${PDB_SERVER}/data/structures/divided/mmCIF/ pdb/divided
-  rsync -rlpt -v -z --delete --port=${PDB_PORT} ${PDB_SERVER}/data/structures/obsolete/mmCIF/ pdb/obsolete
-  touch PDB_MMCIF_READY
-fi
