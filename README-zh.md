@@ -46,7 +46,9 @@ cd tFold
 
 4. 下载序列库用于构建MSA
 ```shell
-sh scripts/setup_database.sh
+colab_databases_path=your_path # 指定你的路径，这里需要比较大的存储空间 
+sh scripts/setup_database.sh $colab_databases_path 
+ln -s $colab_databases_path colab_databases
 ```
 
 ## 数据集

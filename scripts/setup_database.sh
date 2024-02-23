@@ -77,21 +77,6 @@ if [ ! -f COLABDB_READY ]; then
   touch COLABDB_READY
 fi
 
-if [ ! -f PDB_READY ]; then
-  downloadFile "https://wwwuser.gwdg.de/~compbiol/colabfold/pdb100_230517.fasta.gz" "pdb100_230517.fasta.gz"
-  mmseqs createdb pdb100_230517.fasta.gz pdb100_230517
-  if [ -z "$MMSEQS_NO_INDEX" ]; then
-    mmseqs createindex pdb100_230517 tmp3 --remove-tmp-files 1
-  fi
-  touch PDB_READY
-fi
-
-
-if [ ! -f PDB100_READY ]; then
-  downloadFile "https://wwwuser.gwdg.de/~compbiol/data/hhsuite/databases/hhsuite_dbs/pdb100_foldseek_230517.tar.gz" "pdb100_foldseek_230517.tar.gz"
-  tar xzvf pdb100_foldseek_230517.tar.gz pdb100_a3m.ffdata pdb100_a3m.ffindex
-  touch PDB100_READY
-fi
 
 if [ ! -f PDB_MMCIF_READY ]; then
   mkdir -p pdb/divided

@@ -46,9 +46,11 @@ cd tFold
     * [Tencent Weiyun Drive](https://share.weiyun.com/EF0QKLj8)
     * [Google Drive](https://drive.google.com/file/d/1BRBsxSLaUAas8K0SMXiZdNaMARwNnRFN/view?pli=1)
 
-4. Download sequence databases for mas searching (only needed for tFold-Ag)
+4. Download sequence databases for msa searching (only needed for tFold-Ag)
 ```shell
-sh scripts/setup_database.sh
+colab_databases_path=your_path # Specify your path, requires more space
+sh scripts/setup_database.sh $colab_databases_path
+ln -s $colab_databases_path colab_databases
 ```
 ## Dataset
 ###
