@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import argparse
 import os
 from glob import glob
@@ -10,6 +10,7 @@ from tfold.protein.tool import ColabSearch
 
 def generate_msa(fasta_file,
                  db1_path='uniref30_2103_db',
+                 db2_path='pdb70',
                  db3_path='colabfold_envdb_202108_db',
                  output_dir=None,
                  num_workers=1,
@@ -20,6 +21,7 @@ def generate_msa(fasta_file,
 
     colab_search = ColabSearch(output_dir,
                                db1_path=db1_path,
+                               db2_path=db2_path,
                                db3_path=db3_path,
                                use_env=True,
                                use_templates=False,
@@ -46,8 +48,9 @@ def generate_msa(fasta_file,
 
 
 def parse_args():
-    database_dir = 'colab_databases'
+    database_dir = '/mnt/ai4x_ceph/fandiwu/buddy1/Datasets/colab_databases'
     db1 = f'{database_dir}/uniref30_2302_db'
+    db2 = f'{database_dir}/pdb70'
     db3 = f'{database_dir}/colabfold_envdb_202108'
     parser = argparse.ArgumentParser(
         description='Generate MSA for structure predictions using MMseqs2'
@@ -55,6 +58,7 @@ def parse_args():
     parser.add_argument('--fasta_file', required=True, help='fasta file')
     parser.add_argument('--output_dir', default='target', help='output dir')
     parser.add_argument('--db1', default=db1, help='database 1 name')
+    parser.add_argument('--db2', default=db2, help='database 2 name')
     parser.add_argument('--db3', default=db3, help='database 3 name')
     parser.add_argument('--mmseqs', default='/usr/bin/mmseqs', help='path of mmseqs binary')
     parser.add_argument('--num_workers', type=int, default=8, help='number of workers')
@@ -66,6 +70,7 @@ if __name__ == '__main__':
     args = parse_args()
     generate_msa(args.fasta_file,
                  args.db1,
+                 args.db2,
                  args.db3,
                  output_dir=args.output_dir,
                  num_workers=args.num_workers,

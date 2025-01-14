@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2021, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import logging
 import sys
 from functools import partial

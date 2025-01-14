@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import numpy as np
 import torch
 
@@ -30,7 +30,7 @@ def calc_rot_n_tsl(x1, x2, x3, eps=1e-6):
     e1 = v1 / (torch.norm(v1) + eps)
     u2 = v2 - torch.inner(e1, v2) * e1
     e2 = u2 / (torch.norm(u2) + eps)
-    e3 = torch.cross(e1, e2)
+    e3 = torch.linalg.cross(e1, e2)
     rot_mat = torch.stack([e1, e2, e3], dim=0).permute(1, 0)
     tsl_vec = x2
 
@@ -55,7 +55,7 @@ def calc_rot_n_tsl_batch(cord_tns):
     e1 = v1 / (torch.norm(v1, dim=1, keepdim=True) + eps)
     u2 = v2 - torch.sum(e1 * v2, dim=1, keepdim=True) * e1
     e2 = u2 / (torch.norm(u2, dim=1, keepdim=True) + eps)
-    e3 = torch.cross(e1, e2, dim=1)
+    e3 = torch.linalg.cross(e1, e2, dim=1)
     rot_tns = torch.stack([e1, e2, e3], dim=1).permute(0, 2, 1)
     tsl_mat = x2
 
@@ -77,9 +77,9 @@ def calc_dihd_angl_batch(cord_tns):
     a1 = x2 - x1
     a2 = x3 - x2
     a3 = x4 - x3
-    v1 = torch.cross(a1, a2, dim=1)
+    v1 = torch.linalg.cross(a1, a2, dim=1)
     v1 = v1 / (torch.norm(v1, dim=1, keepdim=True) + eps)  # is this necessary?
-    v2 = torch.cross(a2, a3, dim=1)
+    v2 = torch.linalg.cross(a2, a3, dim=1)
     v2 = v2 / (torch.norm(v2, dim=1, keepdim=True) + eps)  # is this necessary?
     n1 = torch.norm(v1, dim=1)
     n2 = torch.norm(v2, dim=1)
@@ -354,11 +354,11 @@ def rot2quat(rot_mats, quat_type='full'):
     """Convert rotation matrices into full / partial quaternion vectors.
 
     Args:
-    * rot_mats: rotation matrices of size L x 3 x 3
-    * quat_type: type of quaternion vectors (choices: 'full' / 'part')
+        rot_mats: rotation matrices of size L x 3 x 3
+        quat_type: type of quaternion vectors (choices: 'full' / 'part')
 
     Returns:
-    * quat_vecs: quaternion vectors of size L x 4 (full) or L x 3 (part)
+        quat_vecs: quaternion vectors of size L x 4 (full) or L x 3 (part)
     """
 
     return rot2quat_full(rot_mats) if quat_type == 'full' else rot2quat_part(rot_mats)
@@ -429,7 +429,8 @@ def apply_trans(cord_tns_raw, rot_tns_raw, tsl_tns_raw, grouped=False, reverse=F
         cord_tns = torch.reshape(cord_tns_raw, [1, -1, 3])  # 1 x M x 3
     else:
         cord_tns = torch.reshape(cord_tns_raw, [n_frams, -1, 3])  # L x M x 3
-
+        
+    cord_tns = cord_tns.float()
     # apply the global transformation
     if not reverse:
         cord_tns_out = tsl_tns.unsqueeze(dim=1) + torch.sum(
@@ -439,4 +440,4 @@ def apply_trans(cord_tns_raw, rot_tns_raw, tsl_tns_raw, grouped=False, reverse=F
         cord_tns_out = torch.sum(
             rot_tns_inv * (cord_tns - tsl_tns.unsqueeze(dim=1)).unsqueeze(dim=2), dim=3)
 
-    return cord_tns_out
+    return cord_tns_out.to(cord_tns_raw.dtype)

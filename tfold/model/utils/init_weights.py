@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import math
 import numpy as np
 import torch

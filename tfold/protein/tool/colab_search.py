@@ -1,4 +1,4 @@
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import os
 
 
@@ -63,13 +63,13 @@ class ColabSearch:
         self.db1_idx_path = f'{self.db1_path}{IDX}'
         # assert os.path.exists(self.db1_seq_path), f'not exist msa search database: ({self.db1_path})'
         self.db2_path = db2_path
-        self.db2_seq_path = f'{self.db2_path}{SEQ}'
-        self.db2_aln_path = f'{self.db2_path}{ALN}'
-        self.db2_idx_path = f'{self.db2_path}{IDX}'
+        self.db2_seq_path = f'{self.db2_path}/{SEQ}'
+        self.db2_aln_path = f'{self.db2_path}/{ALN}'
+        self.db2_idx_path = f'{self.db2_path}/{IDX}'
 
         self.db3_path = db3_path
-        self.db3_seq_path = f'{self.db3_path}{SEQ}'
-        self.db3_aln_path = f'{self.db3_path}{ALN}'
+        self.db3_seq_path = f'{self.db3_path}/{SEQ}'
+        self.db3_aln_path = f'{self.db3_path}/{ALN}'
 
         self.db_load_mode = db_load_mode
         self.search_param = f'--num-iterations 3 --db-load-mode {self.db_load_mode} -a -s 8 -e 0.1 --max-seqs 10000'

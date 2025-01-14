@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
+import argparse
 import logging
 import os
 import shutil
-import argparse
 from collections import OrderedDict
 
 import torch
 
 from tfold.protein import PdbParser
-from tfold.protein.parser.fasta_parser import export_fas_file, parse_fas_file_mult
-from tfold.protein.utils import calc_inter_contacts, calc_ppi_sites
+from tfold.protein.data_transform import calc_inter_contacts, calc_ppi_sites
+from tfold.protein.parser import parse_fasta, export_fasta
 from tfold.utils import get_tmp_dpath
 from tfold.utils import setup
-
 
 dist_thres = 10
 
@@ -45,31 +44,35 @@ def gen_icf_feat(pid_fpath, fas_dpath, pdb_dpath, icf_dpath, icf_type):
     tmp_dpath = get_tmp_dpath()
     if not os.path.isdir(icf_dpath):
         os.mkdir(icf_dpath)
-    with open(pid_fpath, 'r') as F:
-        prot_ids = [item.strip() for item in F.readlines()]
+    if pid_fpath.endswith('.txt'):
+        with open(pid_fpath, 'r') as F:
+            prot_ids = [item.strip() for item in F.readlines()]
+    else:
+        prot_ids = [os.path.basename(pid_fpath)[: -len('.fasta')]]
 
     for prot_id in prot_ids:
         fas_fpath = os.path.join(fas_dpath, prot_id + '.fasta')
         pdb_fpath = os.path.join(pdb_dpath, prot_id + '.pdb')
 
         # inter-chain feature
-        icf_fpath = os.path.join(icf_dpath, prot_id + '.pt')
+        os.makedirs(os.path.join(icf_dpath, icf_type), exist_ok=True)
+        icf_fpath = os.path.join(icf_dpath, icf_type, prot_id + '.pt')
 
-        aa_seq_dict = parse_fas_file_mult(fas_fpath)
-        aa_seq_dict = {k[-1]: v for k, v in aa_seq_dict.items()}
+        sequences, chain_ids, _ = parse_fasta(fas_fpath)
 
         # generate per-chain FASTA files
         for chain_id in ['H', 'L', 'A']:
-            if chain_id not in aa_seq_dict:
+            if chain_id not in chain_ids:
                 continue
             chain_id_ext = f'{prot_id}_{chain_id}'
             fas_fpath_chn = os.path.join(tmp_dpath, f'{chain_id_ext}.fasta')
-            export_fas_file(chain_id_ext, aa_seq_dict[chain_id], fas_fpath_chn)
+            seq = sequences[chain_ids.index(chain_id)]
+            export_fasta([seq, ], [chain_id_ext, ], fas_fpath_chn)
 
         # renumber the native PDB file
         prot_data = OrderedDict()
         for chain_id in ['H', 'L', 'A']:
-            if chain_id not in aa_seq_dict:
+            if chain_id not in chain_ids:
                 continue
             fas_fpath_chn = os.path.join(tmp_dpath, f'{prot_id}_{chain_id}.fasta')
             aa_seq, cord_tns, cmsk_mat, _, error_msg = PdbParser.load(
@@ -105,6 +108,6 @@ def gen_icf_feat(pid_fpath, fas_dpath, pdb_dpath, icf_dpath, icf_type):
 
 
 if __name__ == '__main__':
-    args = parse_args()
     setup(True)
+    args = parse_args()
     gen_icf_feat(args.pid_fpath, args.fas_dpath, args.pdb_dpath, args.icf_dpath, args.icf_type)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import torch
 import torch.nn as nn
 
@@ -28,18 +28,18 @@ class MultimerPositionEmebedding(nn.Module):
         # build a shared sinusoidal positional encoder for all the chain types
         self.posi_encoder = SinusoidalPositionEmbedding(self.dim, self.max_len)
 
-    def forward(self, chn_infos):
+    def forward(self, lengths, device=None, dtype=None):
         """Get multimer positional encodings.
 
         Args:
-            chn_infos: list of (chain_id, n_resds) tuples
+            lengths: list of chain sequence lengths
 
         Returns:
             penc_mat: positional encodings of size L x D
         """
 
         # get multimer positional encodings
-        idxs_vec = torch.cat([torch.arange(n_resds) for _, n_resds in chn_infos], dim=0)
-        penc_mat = self.posi_encoder(idxs_vec)
+        idxs_vec = torch.cat([torch.arange(seq_len, device=device) for seq_len in lengths], dim=0)
+        penc_mat = self.posi_encoder(idxs_vec).to(dtype)
 
         return penc_mat

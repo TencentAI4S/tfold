@@ -1,19 +1,16 @@
-"""Antibody & antigen structures prediction and design w/ pre-trained tFold-Ag models."""
-import os
+# -*- coding: utf-8 -*-
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import argparse
+import os
 
 import torch
 
-from tfold.utils import setup_logger
 from tfold.deploy import AgPredictor
-
-# default directory path to pre-trained tFold-Ag models
-MDL_DPATH = '/apdcephfs/share_1594716/fandiwu/Pre-trained.Models/tFold-Ag-models-release'
+from tfold.utils import setup_logger
 
 
 def parse_args():
-    """Parse input arguments."""
-
+    MDL_DPATH = '/apdcephfs/share_1594716/fandiwu/Pre-trained.Models/tFold-Ag-models-release'
     parser = argparse.ArgumentParser(description='Antibody & antigen structures prediction and design w/ tFold-Ag')
     parser.add_argument('--pid_fpath', type=str, required=True,
                         help='Path to the plain-text file of antibody IDs')
@@ -26,7 +23,7 @@ def parse_args():
     parser.add_argument('--icf_dpath', required=False, default=None,
                         help='Directory path to inter-chain feature files (.pt)')
     parser.add_argument('--mdl_dpath', type=str, default=MDL_DPATH, help='model directory path')
-    parser.add_argument('--model_ver', type=str, default='base', choices=['base', 'ppi', 'contact'],
+    parser.add_argument('--model_ver', default='base', choices=['base', 'ppi', 'contact'],
                         help='tFold-Ag model version (<base>, <ppi> OR <contact>), '
                              '<base> for base tFold-Ag model, <ppi> for prediction & design w/ ppi feature, '
                              '<contact> for prediction & design w/ contact feature.')
@@ -43,8 +40,6 @@ def predict(pid_fpath,
             mdl_dpath,
             model_ver):
     """Predict antibody & antigen sequence and structures w/ pre-trained tFold-Ag models."""
-
-    # configurations
     device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
 
     # get antibody IDs
@@ -64,6 +59,7 @@ def predict(pid_fpath,
 
 
 def main():
+    """Antibody & antigen structures prediction and design w/ pre-trained tFold-Ag models."""
     setup_logger()
     args = parse_args()
     # predict antibody structures w/ pre-trained tFold-Ag models

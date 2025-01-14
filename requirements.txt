@@ -1,9 +1,9 @@
 torch>=2.0
-deepspeed==0.12.3
-termcolor==2.3.0
-biopython==1.79
-ml-collections==0.1.1
-dm-tree==0.1.8
-numpy==1.21.2
-modelcif==0.9
+deepspeed>=0.12.3
+termcolor>=2.3.0
+biopython>=1.79
+ml-collections>=0.1.1
+dm-tree>=0.1.8
+numpy>=1.21.2
+modelcif>=0.9
 scipy

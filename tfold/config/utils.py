@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2021, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import functools
 import inspect
 
 from .config_node import CfgNode
-
+from ml_collections import ConfigDict
 
 def configurable(init_func):
     """
@@ -81,9 +81,10 @@ def _called_with_cfg(*args, **kwargs):
         bool: whether the arguments contain CfgNode and should be considered
             forwarded to from_config.
     """
-    if len(args) and isinstance(args[0], CfgNode):
+    if len(args) and isinstance(args[0], (CfgNode, ConfigDict)):
         return True
-    if isinstance(kwargs.pop('cfg', None), CfgNode):
+
+    if isinstance(kwargs.pop('cfg', None), (CfgNode, ConfigDict)):
         return True
     # `from_config`'s first argument is forced to be 'cfg'.
     # So the above check covers all cases.

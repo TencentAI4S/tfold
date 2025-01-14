@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 from typing import Optional
 
 import torch
@@ -15,25 +15,25 @@ class TransformerLayer(nn.Module):
     def __init__(
             self,
             dim,
-            ffn_dim,
             num_heads,
+            ffn_dim=None,
             use_crp_embeddings: bool = False,
     ):
         super().__init__()
-        self.embed_dim = dim
-        self.ffn_embed_dim = ffn_dim
+        self.dim = dim
+        self.ffn_dim = ffn_dim or 4 * dim
         self.num_heads = num_heads
         self.use_crp_embeddings = use_crp_embeddings
         self.gelu = GELU('erf')
         self.self_attn = MultiheadAttention(
-            self.embed_dim,
+            self.dim,
             self.num_heads,
             use_crp_embeddings=self.use_crp_embeddings,
         )
-        self.self_attn_layer_norm = LayerNorm(self.embed_dim)
-        self.fc1 = Linear(self.embed_dim, self.ffn_embed_dim)
-        self.fc2 = Linear(self.ffn_embed_dim, self.embed_dim)
-        self.final_layer_norm = LayerNorm(self.embed_dim)
+        self.self_attn_layer_norm = LayerNorm(self.dim)
+        self.fc1 = Linear(self.dim, self.ffn_dim)
+        self.fc2 = Linear(self.ffn_dim, self.dim)
+        self.final_layer_norm = LayerNorm(self.dim)
 
     def forward(
             self,

@@ -1,0 +1,15 @@
+[
+    {
+        "name": "7ox3_A_B",
+        "chains": [
+            {
+                "id": "H",
+                "sequence": "QVQVQESGPGLVKPSQTLSLTCTVSGGPITTRYYAWSWIRQPPGKGLEWMGLIDYDGSVYYSPSLKSRTSISRDTAKNQFSLQLSSVTPEDTAVYYCARVSAATLFLDYWGQGTQVTVSS"
+            },
+            {
+                "id": "L",
+                "sequence": "SYELTQPSALSVTLGQTAKITCQGGSLGSSYAHWYQQKPDQAPILVIYDDDSRPSGIPERFSGSSSGGTATLTISGAQAEDEGDYYCQSYDSSANFVFGGGTKLTVL"
+            }
+        ]
+    }
+]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2022, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 from functools import partial
 from typing import List, Union, Tuple
 
@@ -137,3 +137,86 @@ def cdist(x1, x2=None):
     dist = torch.cdist(x1, x2, compute_mode='donot_use_mm_for_euclid_dist')
 
     return dist
+
+
+def dict_multimap(fn, dicts):
+    first = dicts[0]
+    new_dict = {}
+    for k, v in first.items():
+        all_v = [d[k] for d in dicts]
+        if type(v) is dict:
+            new_dict[k] = dict_multimap(fn, all_v)
+        else:
+            new_dict[k] = fn(all_v)
+
+    return new_dict
+
+
+def batched_gather(data, inds, dim=0, no_batch_dims=0):
+    ranges = []
+    # create batch dim index
+    for i, s in enumerate(data.shape[:no_batch_dims]):
+        r = torch.arange(s)
+        r = r.view(*(*((1,) * i), -1, *((1,) * (len(inds.shape) - i - 1))))
+        ranges.append(r)
+
+    remaining_dims = [
+        slice(None) for _ in range(len(data.shape) - no_batch_dims)
+    ]
+    remaining_dims[dim - no_batch_dims if dim >= 0 else dim] = inds
+    ranges.extend(remaining_dims)
+    return data[ranges]
+
+
+def _kernel_make_viewless_tensor(inp, requires_grad):
+    '''Make a viewless tensor.
+
+    View tensors have the undesirable side-affect of retaining a reference
+    to the originally-viewed tensor, even after manually setting the '.data'
+    field. This method creates a new tensor that links to the old tensor's
+    data, without linking the viewed tensor, referenced via the '._base'
+    field.
+    '''
+    out = torch.empty((1,), dtype=inp.dtype, device=inp.device, requires_grad=requires_grad, )
+    out.data = inp.data
+    return out
+
+
+class MakeViewlessTensor(torch.autograd.Function):
+    '''
+    Autograd function to make a viewless tensor.
+
+    This function should be used in cases where the computation graph needs
+    to be propagated, but we only want a viewless tensor (e.g.,
+    ParallelTransformer's hidden_states). Call this function by passing
+    'keep_graph = True' to 'make_viewless_tensor()'.
+    '''
+
+    @staticmethod
+    def forward(ctx, inp, requires_grad):
+        return _kernel_make_viewless_tensor(inp, requires_grad)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        return grad_output, None
+
+
+def make_viewless_tensor(inp, requires_grad, keep_graph):
+    '''
+    Entry-point for creating viewless tensors.
+
+    This method should be used, rather than calling 'MakeViewlessTensor'
+    or '_kernel_make_viewless_tensor' directly. This method acts as a
+    switch for determining if an autograd function or a regular method
+    should be used to create the tensor.
+    '''
+
+    # return tensor as-is, if not a 'view'
+    if inp._base is None:
+        return inp
+
+    # create viewless tensor
+    if keep_graph:
+        return MakeViewlessTensor.apply(inp, requires_grad)
+    else:
+        return _kernel_make_viewless_tensor(inp, requires_grad)

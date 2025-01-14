@@ -1,5 +1,6 @@
 """Utility functions."""
 import torch
+import torch.nn.functional as F
 
 from tfold.protein import ProtStruct
 from tfold.utils import cdist
@@ -58,5 +59,17 @@ def ppi_to_contact(ligand_feat, receptor_feat, ppi_data):
     inter_chain_contact[:, idxs_ppi, 0] = 1
     inter_chain_contact = inter_chain_contact.unsqueeze(0)
     contact_data = gen_contact(ligand_feat, receptor_feat, inter_chain_contact)
+
+    return contact_data
+
+
+def dist_to_contact(logt_tns_dist, pair_mask=None, dist_thres=8):
+    """generate the inter-chain contact using predicted dist logits."""
+
+    dist_bins = torch.linspace(2, 20, 37).to(logt_tns_dist.device)
+    contact_data = (F.softmax(logt_tns_dist, dim=-1) * (dist_bins < dist_thres)).sum(-1)
+
+    if pair_mask is not None:  # get the inter-chain contact
+        contact_data *= pair_mask
 
     return contact_data

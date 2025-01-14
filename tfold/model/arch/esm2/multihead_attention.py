@@ -102,9 +102,9 @@ class MultiheadAttention(nn.Module):
         q = self.q_proj(query) * self.scaling
         k = self.k_proj(key)
         v = self.v_proj(value)
-        q = q.contiguous().view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
-        k = k.contiguous().view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
-        v = v.contiguous().view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
+        q = q.view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
+        k = k.view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
+        v = v.view(-1, batch_size * self.num_heads, self.head_dim).transpose(0, 1)
 
         # calculate raw attention weights
         if not self.use_crp_embeddings:

@@ -1,0 +1,15 @@
+[
+    {
+        "name": "6zkw_E_D_A_B_C",
+        "chains": [
+            {
+                "id": "B",
+                "sequence": "NAGVTQTPKFQVLKTGQSMTLQCSQDMNHEYMSWYRQDPGMGLRLIHYSVGAGITDQGEVPNGYNVSRSTTEDFPLRLLSAAPSQTSVYFCASSYSIRGSRGEQFFGPGTRLTVL"
+            },
+            {
+                "id": "A",
+                "sequence": "AQEVTQIPAALSVPEGENLVLNCSFTDSAIYNLQWFRQDPGKGLTSLLLIQSSQREQTSGRLNASLDKSSGRSTLYIAASQPGDSATYLCAVTNQAGTALIFGKGTTLSVSS"
+            }
+        ]
+    }
+]

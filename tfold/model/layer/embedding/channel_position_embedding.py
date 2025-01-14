@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import torch
 import torch.nn as nn
 
@@ -13,11 +13,11 @@ class ChainRelativePositionEmbedding(nn.Module):
         self.ridx_max = ridx_max
         self.linear = nn.Linear(2 * self.ridx_max + 3, self.n_dims)
 
-    def forward(self, chn_infos, asym_id):
+    def forward(self, lengths, asym_id):
         """Get chain relative positional encodings to update pair features.
 
         Args:
-            chn_infos: list of (chn_type, chn_len) tuples
+            lengths: list of chain sequence lengths
             asym_id: asymmetric ID of length $sum_{i} L_{i}$ (index starts from 1)
 
         Returns:
@@ -33,7 +33,7 @@ class ChainRelativePositionEmbedding(nn.Module):
         asym_tns = asym_mat.to(torch.float32).unsqueeze(dim=2)  # L x L x 1
 
         # pair features - relative positional encodings
-        idxs_vec = torch.cat([torch.arange(x, device=device) for _, x in chn_infos], dim=0)
+        idxs_vec = torch.cat([torch.arange(seq_len, device=device) for seq_len in lengths], dim=0)
         ridx_mat = idxs_vec.view(-1, 1) - idxs_vec.view(1, -1)
         ridx_mat_clip = torch.clip(ridx_mat + self.ridx_max, min=0, max=(2 * self.ridx_max))
         ridx_mat_finl = torch.where(
@@ -41,6 +41,6 @@ class ChainRelativePositionEmbedding(nn.Module):
         onht_tns = nn.functional.one_hot(ridx_mat_finl, num_classes=(2 * self.ridx_max + 2))
 
         # build the update term for pair features
-        pfea_tns = self.linear(torch.cat([asym_tns, onht_tns], dim=2)).unsqueeze(dim=0)
+        pfea_tns = self.linear(torch.cat([asym_tns, onht_tns], dim=2).to(self.linear.bias.dtype)).unsqueeze(dim=0)
 
         return pfea_tns

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import logging
 import os
 import random
@@ -88,5 +88,6 @@ def seed_all_rng(seed=None):
 def setup(inference=False, seed=42):
     if inference:
         torch.set_grad_enabled(False)
+
     seed_all_rng(seed)
     setup_logger()

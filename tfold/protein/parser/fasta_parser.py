@@ -1,11 +1,15 @@
-"""Protein-related utility functions."""
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
+# Data: 2024/6/5 17:08
 import gzip
 import os
 from collections import OrderedDict
 from functools import partial
 
+from Bio import Seq
+from Bio.SeqIO import FastaIO, SeqRecord
 
-def parse_fasta(path):
+
+def parse_fasta(path, to_dict=False):
     """Parse the FASTA file.
 
     Args:
@@ -19,18 +23,36 @@ def parse_fasta(path):
     with open_fn(path) as f:
         fasta_string = f.read()
 
-    return parse_fasta_string(fasta_string)
+    return parse_fasta_string(fasta_string, to_dict=to_dict)
 
 
-def parse_fasta_string(fasta_string):
+def parse_fasta_string(fasta_string, to_dict=False):
+    """Parses FASTA string and returns list of strings with amino-acid sequences.
+
+    Args:
+        fasta_string: The string contents of a FASTA file.
+
+    Returns:
+        A tuple of two lists:
+        * A list of sequences.
+        * A list of sequence ids
+        * A list of sequence descriptions taken from the comment lines. In the
+            same order as the sequences.
+    """
     sequences = []
+    ids = []
     descriptions = []
     index = -1
     for line in fasta_string.splitlines():
         line = line.strip()
         if line.startswith('>'):
             index += 1
-            descriptions.append(line[1:])  # Remove the '>' at the beginning.
+            seq_id, *description = line[1:].split(None, 1)  # Remove the '>' at the beginning.
+            ids.append(seq_id)
+            if len(description) > 0:
+                descriptions.append(description)
+            else:
+                descriptions.append("")
             sequences.append('')
             continue
         elif line.startswith('#'):
@@ -39,67 +61,41 @@ def parse_fasta_string(fasta_string):
             continue  # Skip blank lines.
         sequences[index] += line
 
-    return sequences, descriptions
+    assert len(sequences) == len(ids), f"unvalid fasta file"
+
+    if to_dict:
+        return OrderedDict(zip(ids, sequences))
+
+    return sequences, ids, descriptions
 
 
-def parse_fas_file_mult(path, is_ordered=True):
-    """Parse the FASTA file containing multiple chains.
+def export_fasta(sequences, ids=None, output=None, descriptions=None):
+    if len(sequences) == 0:
+        return
 
-    Args:
-    * path: path to the FASTA file (can be GZIP-compressed)
-    * is_ordered: (optional) whether the output dict is ordered as in the FASTA file
+    fh = None
+    if output is not None:
+        os.makedirs(os.path.dirname(os.path.realpath(output)), exist_ok=True)
+        fh = open(output, "w")
 
-    Returns:
-    * aa_seq_dict: (ordered) dict of (ID, sequence) pairs
-    """
+    if ids is None:
+        ids = [f"sequence{i}" for i in range(len(sequences))]
 
-    # parse all the lines in the FASTA file
-    assert os.path.exists(path), f'FASTA file does not exist: {path}'
-    if not path.endswith('.gz'):
-        with open(path, 'r', encoding='UTF-8') as i_file:
-            i_lines = [i_line.strip() for i_line in i_file]
-    else:
-        with gzip.open(path, 'rt') as i_file:
-            i_lines = [i_line.strip() for i_line in i_file]
+    if descriptions is None:
+        descriptions = ["" for i in range(len(sequences))]
 
-    # build an ordered dict of (ID, sequence) pairs
-    key_last = None
-    aa_seq_dict = OrderedDict() if is_ordered else {}
-    for i_line in i_lines:
-        if i_line.startswith('>'):
-            key_last = i_line[1:]
-            aa_seq_dict[key_last] = ''
+    fasta_string = []
+    for seq, seq_id, desc in zip(sequences, ids, descriptions):
+        fstring = FastaIO.as_fasta(SeqRecord(Seq.Seq(seq),
+                                             id=seq_id,
+                                             description=desc))
+        if fh is not None:
+            fh.write(fstring)
         else:
-            assert key_last is not None, f'failed to get the protein ID in {path}'
-            aa_seq_dict[key_last] += i_line
+            fasta_string.append(fstring)
 
-    return aa_seq_dict
-
-
-def export_fas_file(prot_id, aa_seq, path):
-    """Export the amino-acid sequence to a FASTA file.
-
-    Args:
-        prot_id: protein ID (as in the commentary line)
-        aa_seq: amino-acid sequence
-        path: path to the FASTA file
-    """
-
-    os.makedirs(os.path.dirname(os.path.realpath(path)), exist_ok=True)
-    with open(path, 'w', encoding='UTF-8') as o_file:
-        o_file.write(f'>{prot_id}\n{aa_seq}\n')
-
-
-def export_fas_file_mult(aa_seq_dict, path):
-    """Export amino-acid sequences of multiple chains to a FASTA file.
-
-    Args:
-        aa_seq_dict: ordered dict of (ID, sequence) pairs
-        path: path to the FASTA file
-
-    Returns: n/a
-    """
-    os.makedirs(os.path.dirname(os.path.realpath(path)), exist_ok=True)
-    with open(path, 'w', encoding='UTF-8') as o_file:
-        for prot_id, aa_seq in aa_seq_dict.items():
-            o_file.write(f'>{prot_id}\n{aa_seq}\n')
+    if fh is not None:
+        fh.close()
+        return output
+    else:
+        return "".join(fasta_string)

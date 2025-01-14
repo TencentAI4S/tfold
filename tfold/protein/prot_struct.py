@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import logging
 
 import numpy as np
@@ -12,7 +12,7 @@ from .prot_constants import (RESD_NAMES_3C, RESD_MAP_1TO3, ATOM_NAMES_PER_RESD, 
                              ANGL_INFOS_PER_RESD, N_ATOMS_PER_RESD, N_ANGLS_PER_RESD)
 
 
-class ProtStruct():
+class ProtStruct:
     """Protein structures (3D coordinates, local frames, and torsion angles)."""
 
     def __init__(self):
@@ -98,8 +98,6 @@ class ProtStruct():
         * converter: <ProtConverter> object for coord-frame-angle conversions
         * atom_set: (optional) which atoms to be reconstructed (choices: 'ca' OR 'fa')
 
-        Returns: n/a
-
         Note:
         * We do not take any validness masks as inputs, since all the predicted QTA parameters are
             assumed to be valid.
@@ -178,10 +176,7 @@ class ProtStruct():
         * angl_tns: alternative torsion angles of size L x K x 2
         * fram_tns_sc: alternative side-chain local frames of size L x K x 4 x 3
         """
-
-        # initialization
         device = self.cord_tns.device
-
         # flip all the symmetric torsion angles
         amsk_mat_sym = self.get_amsk_sym(self.aa_seq, device)
         angl_tns = (1 - 2 * amsk_mat_sym).unsqueeze(dim=2) * self.angl_tns

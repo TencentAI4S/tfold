@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 from setuptools import setup, find_packages
 
 with open("README.md") as f:
@@ -17,6 +17,7 @@ setup(
     description="Tencent Protein Predication Library",
     long_description=long_description,
     author="Tencent AI Lab",
+    author_email="chenchenqin@tencent.com",
     packages=find_packages(),
     extras_require=extras,
     zip_safe=True

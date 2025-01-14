@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 from typing import Union
 
 import torch
@@ -29,6 +29,7 @@ class ESM2(nn.Module):
         self.attention_heads = attention_heads
         if not isinstance(alphabet, Alphabet):
             alphabet = Alphabet.from_architecture(alphabet)
+
         self.alphabet = alphabet
         self.alphabet_size = len(alphabet)
         self.padding_idx = alphabet.padding_idx
@@ -51,7 +52,6 @@ class ESM2(nn.Module):
             [
                 TransformerLayer(
                     self.embed_dim,
-                    4 * self.embed_dim,
                     self.attention_heads,
                     use_crp_embeddings=self.use_crp_embeddings,
                 )
@@ -83,16 +83,15 @@ class ESM2(nn.Module):
             need_head_weights=False,
             return_contacts=False,
     ):
-        """Perform the forward pass.
-
+        """
         Args:
-        * tokens: amino-acid tokens of size N x L
-        * asym_ids: (optional) asymmetric IDs of size N x L
-        * enty_ids: (optional) entity IDs of size N x L
-        * repr_layers: (optional) list of layer indices for extracting hidden representations
-        * need_head_weights: (optional) whether to return attention weights
-        * return_contacts: (optional) whether to return contact predictions
-
+            tokens: amino-acid tokens of size N x L
+            asym_ids: (optional) asymmetric IDs of size N x L
+            enty_ids: (optional) entity IDs of size N x L
+            repr_layers: (optional) list of layer indices for extracting hidden representations
+            need_head_weights: (optional) whether to return attention weights
+            return_contacts: (optional) whether to return contact predictions
+        
         Returns:
         * result: dict of output tensors
           > logits: classification logits of size N x L x C (C: number of tokens)
@@ -124,7 +123,7 @@ class ESM2(nn.Module):
         if self.token_dropout:
             mask_ratio_train = 0.15 * 0.8
             smsk_mask = tokens.eq(self.mask_idx)  # N x L
-            mask_ratio_valid = torch.sum(smsk_mask, dim=1) / torch.sum(~spad_mask, dim=1)
+            mask_ratio_valid = torch.sum(smsk_mask, dim=1) / torch.sum(~spad_mask, dim=1).to(embd_tns)
             embd_tns.masked_fill_(smsk_mask.unsqueeze(dim=-1), 0.0)
             embd_tns = embd_tns * \
                        (1 - mask_ratio_train) / (1 - mask_ratio_valid).view(batch_size, 1, 1)

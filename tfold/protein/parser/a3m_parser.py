@@ -1,4 +1,5 @@
-"""Parser for A3M files."""
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
+# Data: 2024/6/5 17:08
 import string
 from typing import Sequence, Tuple
 
@@ -24,7 +25,7 @@ def parse_a3m(a3m_string: str) -> Tuple[Sequence[str], DeletionMatrix]:
                 at `deletion_matrix[i][j]` is the number of residues deleted from
                 the aligned sequence i at residue position j.
     """
-    sequences, _ = parse_fasta_string(a3m_string)
+    sequences, *_ = parse_fasta_string(a3m_string)
     deletion_matrix = []
     for msa_sequence in sequences:
         deletion_vec = []

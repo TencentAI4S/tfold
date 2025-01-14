@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
-import copy
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import logging
-import warnings
 
 import torch
-from torch import nn
 
 from tfold.config import get_config, CfgNode
-from tfold.protein.utils import get_complex_id
-from .docking_model import DockingModel
-from ..complex_structure_model import ComplexStructureModel
+from ..base_model import BaseModel
+from ..core import ComplexStructureModel, DockingModelSM
 from ...build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class AgModel(nn.Module):
+class AgModel(BaseModel):
     """The receptor & ligand complex prediction model.
     """
 
@@ -26,7 +22,7 @@ class AgModel(nn.Module):
         self.ligand_model = ComplexStructureModel(
             **ligand_cfg.to_dict()
         )
-        self.docking_model = DockingModel(
+        self.docking_model = DockingModelSM(
             **docking_cfg.to_dict()
         )
 
@@ -36,7 +32,7 @@ class AgModel(nn.Module):
         state = torch.load(path, map_location='cpu')
         config = get_config()
         config.update(CfgNode(state['config']))
-        print(config)
+        logging.info(config)
         model = cls(config.model)
         model.load_state_dict(state['model'])
         logging.info('restore the pre-trained tFold-Ag model %s', path)
@@ -81,30 +77,30 @@ class AgModel(nn.Module):
             > seq: complex's amino-acid sequence of length Lc = (Ll + Lr) (no linker)
           > asym_id: asymmetric ID of length Lc
         """
-        # prepare the input for ligand prediction
-        ligand_id, receptor_id = get_complex_id(inputs)
+        ligand_id = inputs["base"]["ligand_id"]
+        receptor_id = inputs["base"].get("receptor_id", None)
 
-        inputs_ligand = {}
-        for chn_id in ligand_id.split('-') + [ligand_id]:
-            inputs_ligand[chn_id] = copy.deepcopy(inputs[chn_id])
-
-            if 'mask' in inputs_ligand[chn_id]['base']:
-                seq = inputs_ligand[chn_id]['base']['seq']
-                mask = inputs_ligand[chn_id]['base']['mask']
+        sequences = []
+        for chn_id in ligand_id.split(':'):
+            seq = inputs[chn_id]['base']['seq']
+            if 'mask' in inputs[chn_id]['base']:
+                mask = inputs[chn_id]['base']['mask']
                 modified_seq = ''.join(['G' if mask[i] == 1 else seq[i] for i in range(len(seq))])
-                inputs_ligand[chn_id]['base']['seq'] = modified_seq
+                seq = modified_seq
+            sequences.append(seq)
 
-        with torch.set_grad_enabled(False):
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                outputs = self.ligand_model(inputs_ligand, chunk_size=chunk_size)  # ligand_id
+        s = inputs[ligand_id]["feat"]["sfea"]
+        z = inputs[ligand_id]["feat"]["pfea"]
+
+        outputs = {}
+        with torch.no_grad():
+            outputs[ligand_id] = self.ligand_model(sequences, s, z, chunk_size=chunk_size)  # ligand_id
 
         if receptor_id is not None:  # ligand & receptor complex
-            complex_id = ':'.join([ligand_id, receptor_id])
-            inputs_dock = {}
+            inputs_dock = {"base": {}}
+            inputs_dock["base"]["receptor_id"] = receptor_id
+            inputs_dock["base"]["ligand_id"] = ligand_id
             inputs_dock[receptor_id] = inputs[receptor_id]
-            inputs_dock[complex_id] = inputs[complex_id]
-
             # prepare the ligand input for docking module
             inputs_dock[ligand_id] = {
                 'base': inputs[ligand_id]['base'],
@@ -114,6 +110,8 @@ class AgModel(nn.Module):
                     'cord': outputs[ligand_id]['cord'].detach()
                 }
             }
+            complex_id = ':'.join([ligand_id, receptor_id])
+            inputs_dock[complex_id] = inputs[complex_id]
             outputs_cp = self.docking_model(inputs_dock, chunk_size=chunk_size)
             outputs[complex_id] = outputs_cp
 

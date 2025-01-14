@@ -1,4 +1,6 @@
-"""Parser for PDB files."""
+# -*- coding: utf-8 -*-
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
+# Data: 2024/5/29 17:08
 import gzip
 import logging
 import os
@@ -10,38 +12,12 @@ from Bio.PDB import PDBParser
 from Bio.PDB.PDBExceptions import PDBConstructionException
 
 from tfold.utils import get_rand_str
+from .fasta_parser import parse_fasta
 from ..prot_constants import RESD_NAMES_3C, RESD_MAP_1TO3, RESD_MAP_3TO1, ATOM_NAMES_PER_RESD, N_ATOMS_PER_RESD
 
 
 class PdbParseError(Exception):
     """Exceptions raised when parsing a PDB file w/ BioPython."""
-
-
-def parse_fas_file(path):
-    """Parse the FASTA file.
-
-    Args:
-    * path: path to the FASTA file (could be GZIP-compressed)
-
-    Returns:
-    * prot_id: protein ID (as in the commentary line)
-    * aa_seq: amino-acid sequence
-    """
-
-    # parse all the lines in the FASTA file
-    assert os.path.exists(path), f'FASTA file does not exist: {path}'
-    if not path.endswith('.gz'):
-        with open(path, 'r', encoding='UTF-8') as i_file:
-            i_lines = [i_line.strip() for i_line in i_file]
-    else:
-        with gzip.open(path, 'rt') as i_file:
-            i_lines = [i_line.strip() for i_line in i_file]
-
-    # determine the protein ID & amino-acid sequence
-    prot_id = i_lines[0][1:]
-    aa_seq = ''.join(i_lines[1:])
-
-    return prot_id, aa_seq
 
 
 class PdbParser:
@@ -51,7 +27,7 @@ class PdbParser:
     def load(
             cls, pdb_fpath, aa_seq=None, fas_fpath=None,
             model_id=None, chain_id=None, has_plddt=False,
-    ):  # pylint: disable=too-many-arguments
+    ):
         """Load a protein structure from the PDB file.
 
         Args:
@@ -101,7 +77,7 @@ class PdbParser:
             # obtain the amino-acid sequence (could be None)
             if aa_seq is None:
                 if fas_fpath is not None:
-                    _, aa_seq = parse_fas_file(fas_fpath)
+                    aa_seq = parse_fasta(fas_fpath)[0][0]
                 else:  # then the amino-acid sequence must be parsed from the PDB file
                     aa_seq = cls.__get_aa_seq_from_seqres(pdb_fpath, chain_id)
 
@@ -140,14 +116,12 @@ class PdbParser:
         """Save the protein structure to a PDB file.
 
         Args:
-        * aa_seq: amino-acid sequence
-        * atom_cords: per-atom 3D coordinates of size L x M x 3
-        * atom_masks: per-atom 3D coordinates' validness masks of size L x M
-        * path: path to the PDB file
-        * chain_id: (optional) chain ID
-        * plddt_vec: (optional) per-residue lDDT-Ca predicted scores of size L
-
-        Returns: n/a
+            aa_seq: amino-acid sequence
+            atom_cords: per-atom 3D coordinates of size L x M x 3
+            atom_masks: per-atom 3D coordinates' validness masks of size L x M
+            path: path to the PDB file
+            chain_id: (optional) chain ID
+            plddt_vec: (optional) per-residue lDDT-Ca predicted scores of size L
         """
 
         os.makedirs(os.path.dirname(os.path.realpath(path)), exist_ok=True)
@@ -168,11 +142,9 @@ class PdbParser:
         """Save the multimer structure to a PDB file (also works for single-chain inputs).
 
         Args:
-        * prot_data: (ordered) dict of multimer structure
-        * path: path to the PDB file
-        * pred_info: predicted information
-
-        Returns: n/a
+            prot_data: (ordered) dict of multimer structure
+            path: path to the PDB file
+            pred_info: predicted information
 
         Notes:
         * <prot_data> uses <chain_id> as key, and the value dict has following fields:
@@ -213,10 +185,8 @@ class PdbParser:
     def __get_pdb_strs(
             cls, aa_seq, chain_id, atom_cords, atom_masks,
             plddt_vec=None, bfctr_vec=None, idx_atom_base=0,
-    ):  # pylint: disable=too-many-arguments,too-many-locals
+    ):
         """Get PDB line strings (no REMARK section) for the specified protein structure."""
-
-        # configurations
         occupancy = 1.0
         temp_fctr = 1.0
         cord_min = -999.999
@@ -415,12 +385,9 @@ class PdbParser:
         """Get pLDDT scores (per-residue & overall).
 
         Notes:
-        * The overall pLDDT is computed all chains in the PDB file, rather than a single chain.
+            The overall pLDDT is computed all chains in the PDB file, rather than a single chain.
         """
-
-        # initialization
         n_resds = len(aa_seq)
-
         # obtain line strings from the PDB file
         line_strs = cls.__get_line_strs(path)
 

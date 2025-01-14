@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 from collections import OrderedDict
 
 import numpy as np
@@ -29,7 +29,8 @@ RESD_MAP_1TO3 = OrderedDict([
 ])
 
 RESD_MAP_3TO1 = {v: k for k, v in RESD_MAP_1TO3.items()}
-# note that not compact with alphafold
+
+# note that order not compact with alphafold
 RESD_NAMES_1C = sorted(list(RESD_MAP_1TO3.keys()))
 RESD_NAMES_3C = sorted(list(RESD_MAP_1TO3.values()))
 RESD_NUM = len(RESD_NAMES_1C)  # := 20.
@@ -60,7 +61,6 @@ ATOM_NAMES_PER_RESD = {
     'SER': ['C', 'CA', 'CB', 'N', 'O', 'OG'],
     'THR': ['C', 'CA', 'CB', 'CG2', 'N', 'O', 'OG1'],
     'TRP': ['C', 'CA', 'CB', 'CG', 'CD1', 'CD2', 'CE2', 'CE3', 'CZ2', 'CZ3', 'CH2', 'N', 'NE1', 'O'],
-    # pylint: disable=line-too-long
     'TYR': ['C', 'CA', 'CB', 'CG', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'N', 'O', 'OH'],
     'VAL': ['C', 'CA', 'CB', 'CG1', 'CG2', 'N', 'O']
 }

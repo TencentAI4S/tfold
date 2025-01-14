@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
 import torch.nn as nn
 
-from tfold.model.layer import Linear
 from .utils import contact_to_ppi
+from ..linear import Linear
 
 
 class PPIEmbedding(nn.Module):
@@ -34,6 +34,8 @@ class PPIEmbedding(nn.Module):
 
     def forward(self, ligand_feat, receptor_feat, ppi_data):
         ppi_feat = self.preprocess(ligand_feat, receptor_feat, ppi_data)
+        if ppi_feat.dtype != self.proj_ppi_fea.weight.dtype:
+            ppi_feat = ppi_feat.to(self.proj_ppi_fea.weight.dtype)
         ppi_sfea_tns = self.proj_ppi_fea(self.emb_init(ppi_feat))
 
         return ppi_sfea_tns

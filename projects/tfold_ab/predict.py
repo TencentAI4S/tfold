@@ -1,55 +1,95 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2023, Tencent Inc. All rights reserved.
+# Copyright (c) 2024, Tencent Inc. All rights reserved.
+import argparse
 import os
 import sys
-import argparse
+
 import torch
+import tqdm
 
 sys.path.append('.')
 
-from tfold import AbPredictor
-from tfold.utils import setup
+from tfold.deploy import PLMComplexPredictor
+from tfold.protein.parser import parse_fasta
+from tfold.utils import setup, jload
+from tfold.model.pretrain import tfold_ab_trunk, esm_ppi_650m_ab
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Antibody structures prediction w/ tFold-Ab')
-    parser.add_argument('--pid_fpath', type=str, required=True, help='Path to the plain-text file of protein IDs')
-    parser.add_argument('--fas_dpath', type=str, required=True, help='Directory path to input FASTA files')
+    parser.add_argument('--fasta', '-f',
+                        type=str,
+                        default=None,
+                        help='path to input FASTA files for single inference')
+    parser.add_argument('--json', '-j', type=str, default=None, help='json file for batch inference')
     parser.add_argument(
-        '--pdb_dpath',
+        '--output',
         type=str,
-        default=f'pdb.files.tfold_ab',
-        help='Directory path to output PDB files, default is "pdb.files.tfold_ab"',
+        default="examples/results/7ox3_A_B.pdb",
+        help='directory of output pdb files when batching inference',
     )
     parser.add_argument(
-        '--mdl_dpath', type=str, default='params', help='Path to the model directory, default is "params"'
+        '--device', '-d', type=str, default=None, help='inference device'
+    )
+    parser.add_argument(
+        '--chunk_size', '-cs',
+        type=int,
+        default=None,
+        help='chunk size for long chain inference',
     )
     args = parser.parse_args()
 
     return args
 
 
-def predict(pid_fpath, fas_dpath, mdl_dpath, output=None):
+def predict(args):
     """Predict antibody & antigen sequence and structures w/ pre-trained tFold-Ag models."""
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    if args.fasta is not None:
+        path = args.fasta
+        sequences, ids, _ = parse_fasta(path)
+        assert len(sequences) == 2 or 1, f"only support two chains in fasta file in antibody and one chain in nanobody"
+        chains = [{"sequence": seq, "id": seq_id} for seq, seq_id in zip(sequences, ids)]
+        save_dir, basename = os.path.split(path)
+        name = basename.split(".")[0]
+        output = args.output or f"{save_dir}/{name}.pdb"
+        batches = [
+            {
+                "name": name,
+                "chains": chains,
+                "output": output
+            }
+        ]
+    else:
+        tasks = jload(args.json)
+        batches = []
+        for task in tasks:
+            name = task["name"]
+            task["output"] = f"{args.output}/{name}.pdb"
+            batches.append(task)
+
+    if args.device is None:
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    else:
+        device = torch.device(args.device)
 
     # antibody & antigen structures prediction
-    predictor = AbPredictor(ppi_path=f'{mdl_dpath}/esm_ppi_650m.pth', ab_path=f'{mdl_dpath}/tfold_ab.pth').to(device)
+    print("> loading model...")
+    predictor = PLMComplexPredictor.restore_from_module(ppi_path=esm_ppi_650m_ab(),
+                                                        trunk_path=tfold_ab_trunk())
+    predictor.to(device)
+    if torch.cuda.is_bf16_supported():
+        predictor.to(torch.bfloat16)
 
-    with open(pid_fpath, 'r', encoding='utf-8') as i_file:
-        prot_ids = [i_line.strip() for i_line in i_file]
-
-    for prot_id in prot_ids:
-        fas_fpath = os.path.join(fas_dpath, f'{prot_id}.fasta')
-        assert os.path.exists(fas_fpath), fas_fpath
-        pdb_fpath = os.path.join(output, f'{prot_id}.pdb')
-        predictor(fas_fpath, pdb_fpath)
+    chunk_size = args.chunk_size
+    print(f"#inference samples: {len(batches)}")
+    for task in tqdm.tqdm(batches):
+        predictor.infer_pdb(task["chains"], filename=task["output"], chunk_size=chunk_size)
 
 
 def main():
     args = parse_args()
     setup()
-    predict(args.pid_fpath, args.fas_dpath, args.mdl_dpath, output=args.pdb_dpath)
+    predict(args)
 
 
 if __name__ == '__main__':
