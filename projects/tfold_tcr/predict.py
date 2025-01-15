@@ -35,6 +35,9 @@ def parse_args():
     parser.add_argument(
         '--device', '-d', type=str, default=None, help='inference device'
     )
+    parser.add_argument(
+        '--seed', type=int, default=42, help='random seed for diversity sampling'
+    )
     args = parser.parse_args()
 
     return args
@@ -82,8 +85,6 @@ def predict(args):
                                      trunk_path=tfold_tcr_pmhc_trunk())
 
     predictor.to(device)
-    # if torch.cuda.is_bf16_supported():
-    #     predictor.to(torch.bfloat16)
 
     chunk_size = args.chunk_size
     print(f"#inference samples: {len(batches)}")
@@ -93,7 +94,7 @@ def predict(args):
 
 def main():
     args = parse_args()
-    setup(True)
+    setup(True, seed=args.seed)
     predict(args)
 
 

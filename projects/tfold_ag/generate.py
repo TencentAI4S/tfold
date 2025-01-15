@@ -54,6 +54,9 @@ def parse_args():
     parser.add_argument(
         '--device', '-d', type=str, default=None, help='inference device'
     )
+    parser.add_argument(
+        '--seed', type=int, default=42, help='random seed for diversity sampling'
+    )
     args = parser.parse_args()
 
     return args
@@ -130,15 +133,13 @@ def generate(args):
     predictor.to(device)
 
     for task in tqdm.tqdm(batches):
-        if os.path.exists(task["output"]):
-            print(f"Skip {task['output']} because it exists")
-            continue
-        predictor.generate_fasta(task["chains"], filename=task["output"], icf_path=task["icf_path"], chunk_size=args.chunk_size)
+        predictor.generate_fasta(
+            task["chains"], filename=task["output"], icf_path=task["icf_path"], chunk_size=args.chunk_size)
 
 
 def main():
     args = parse_args()
-    setup(True)
+    setup(True, seed=args.seed)
     generate(args)
 
 

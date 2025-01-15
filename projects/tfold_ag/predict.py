@@ -3,7 +3,6 @@
 import argparse
 import os
 import sys
-from random import random
 
 import torch
 import tqdm
@@ -54,6 +53,9 @@ def parse_args():
     )
     parser.add_argument(
         '--device', '-d', type=str, default=None, help='inference device'
+    )
+    parser.add_argument(
+        '--seed', type=int, default=42, help='random seed for diversity sampling'
     )
     args = parser.parse_args()
 
@@ -129,21 +131,15 @@ def predict(args):
         psp_path=alpha_fold_4_ptm(),
     )
     predictor.to(device)
-    import time
-    import random
-    chunk_size = args.chunk_size
-    random.seed(time.time())
-    random.shuffle(batches)
+
     for task in tqdm.tqdm(batches):
-        if os.path.exists(task["output"]):
-            print(f"exist file: {task['output']}")
-            continue
-        predictor.infer_pdb(task["chains"], filename=task["output"], icf_path=task["icf_path"], chunk_size=args.chunk_size)
+        predictor.infer_pdb(
+            task["chains"], filename=task["output"], icf_path=task["icf_path"], chunk_size=args.chunk_size)
 
 
 def main():
     args = parse_args()
-    setup(True)
+    setup(True, seed=args.seed)
     predict(args)
 
 

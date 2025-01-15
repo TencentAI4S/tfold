@@ -165,7 +165,7 @@ class AgPredictor(BaseStructurePredictor):
                 aa_seq = outputs[complex_id]['1d']['seq'][start:start + len(aa_seq)]
                 plddt = outputs[complex_id]['3d']['plddt'][-1]['plddt-r'][start:start + len(aa_seq)].detach()
                 mask = inputs[ligand_id]['base']['mask'][start:start + len(aa_seq)]
-                region_plddt = torch.sum(plddt.cpu() * mask.cpu()) / (torch.sum(mask.cpu()) + 1e-6)
+                region_plddt = torch.sum(plddt * mask) / (torch.sum(mask) + 1e-6)
                 desc = f"design confidence {region_plddt:.3f}"
             else:
                 desc = ""

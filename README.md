@@ -42,16 +42,18 @@ For business partnership opportunities, please contact leslielwang@tencent.com.
 #### Unbound Antibody Prediction (SAbDab-22H2-Ab)
 |       **Model**       |  **RMSD-CDR-H3** | **DockQ**  |
 | :------------------:  | :--------------: | :--------: |
-|  AlphaFold-Multimer   |     3.09         |   0.769    |
-|  IgFold               |     3.40         |   0.711    |
-|  DeepAb               |     3.77         |   0.718    |
-|  ImmuneBuilder        |     3.49         |   0.745    |
-|  **tFold-Ab**         |     3.04         |   0.766    |
+|  AlphaFold-Multimer   |     3.07         |   0.773    |
+|  Chai-1               |     3.25         |   0.772    |
+|  IgFold               |     3.37         |   0.715    |
+|  DeepAb               |     3.73         |   0.721    |
+|  ImmuneBuilder        |     3.46         |   0.749    |
+|  **tFold-Ab**         |     3.01         |   0.770    |
 
 #### Unbound Nanobody Prediction (SAbDab-22H2-Nano)
 |       **Model**       |  **RMSD-CDR-H3** |
 | :------------------:  | :--------------: |
 | AlphaFold             |     3.96         |
+| Chai-1                |     3.57         |
 | IgFold                |     4.64         |
 | ImmuneBuilder         |     3.79         |
 | ESMFold               |     3.80         |
@@ -61,11 +63,11 @@ For business partnership opportunities, please contact leslielwang@tencent.com.
 #### Antibody-Antigen Complex Prediction (SAbDab-22H2-AbAg)
 |       **Model**       |     **DockQ**    | **Success Rate**  |
 | :------------------:  | :--------------: | :---------------: |
-| AlphaFold-Multimer    |     0.162        |        18.7       |
-| AlphaFold-3           |     0.265        |        33.3       |
-| **tFold-Ag**          |     0.223        |        29.2       |
+| AlphaFold-Multimer    |     0.158        |        18.2       |
+| AlphaFold-3           |     0.257        |        32.3       |
+| **tFold-Ag**          |     0.217        |        28.3       |
 
-#### unbound TCR Prediction (STCRDab-22-TCR)
+#### unliganded TCR Prediction (STCRDab-22-TCR)
 |       **Model**       |  **RMSD-CDR-A3** | **RMSD-CDR-B3** | **DockQ**  |
 | :------------------:  | :--------------: | :-------------: | :--------: |
 | AlphaFold-Multimer    |       1.89       |      1.62       |   0.785    |
@@ -80,7 +82,7 @@ For business partnership opportunities, please contact leslielwang@tencent.com.
 | AlphaFold-3           |  0.926     |
 | **tFold-TCR**         |  0.908     |
 
-#### TCR-pMHC Prediction (STCRDab-22-TCR_pMHC)
+#### TCR-pMHC Complex Prediction (STCRDab-22-TCR_pMHC)
 |       **Model**       | **DockQ**  |   **RMSD**   |  **Success Rate** |
 | :------------------:  | :--------: | :----------: | :---------------: |
 | AlphaFold-Multimer    |  0.490     |   3.601      |       83.3        |

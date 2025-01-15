@@ -7,14 +7,5 @@
                 "sequence": "QVQLVESGGGLVQAGGSLRLSCAASGSIRSLNAMGWYRQAPGKQRELVAAITSRGSTRYGDFVKGRFTISRGNAKNTVYLQMNSLSVEDTAVYYCKQTQLGYDYWGQGTQVTVSS"
             }
         ]
-    },
-        {
-        "name": "test",
-        "chains": [
-            {
-                "id": "H",
-                "sequence": "EVQLVESGGGLVQPGGSLRLSCAASGFTVSSNYMSWVRQAPRKALEWIGEINHSGSTNYNPSLKSRVTISRDNSKNTLYLQMNSLRAEDTATYYCAKIFVWGKGTTVTVSS"
-            }
-        ]
     }
 ]

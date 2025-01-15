@@ -111,5 +111,9 @@ venv.bak/
 /.vscode
 # weights
 /assets
+#/tests
 project*/*/assets
 evaluation/
+scripts/export_*.py
+checkpoints/*
+examples/results
