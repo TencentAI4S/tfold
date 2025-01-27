@@ -77,8 +77,6 @@ def predict(args):
     predictor = PLMComplexPredictor.restore_from_module(ppi_path=esm_ppi_650m_ab(),
                                                         trunk_path=tfold_ab_trunk())
     predictor.to(device)
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     chunk_size = args.chunk_size
     print(f"#inference samples: {len(batches)}")
