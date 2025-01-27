@@ -28,8 +28,6 @@ def test_json():
     # antibody & antigen structures prediction
     print("> loading model...")
     predictor = PLMComplexPredictor.restore_from_hub("tfold_ab").to(device)
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     print(f"#inference samples: {len(batches)}")
     for task in tqdm.tqdm(batches):
@@ -55,8 +53,6 @@ def test_fasta():
     # antibody & antigen structures prediction
     print("> loading model...")
     predictor = PLMComplexPredictor.restore(tfold_ab()).to(device)
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     print(f"#inference samples: {len(batches)}")
     for task in tqdm.tqdm(batches):

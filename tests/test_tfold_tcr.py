@@ -33,9 +33,6 @@ def test_tcr_pmhc_example():
         trunk_path="checkpoints/tfold_tcr_pmhc_trunk.pth"
     )
     predictor = predictor.to(device)
-    if torch.cuda.is_bf16_supported():
-        print("convert model to bfloat16")
-        predictor.to(torch.bfloat16)
 
     for task in tqdm.tqdm(batches):
         predictor.infer_pdb(task["chains"], filename=task["output"], chunk_size=512)
@@ -60,8 +57,6 @@ def test_tcr_example():
         trunk_path="checkpoints/tfold_tcr_trunk.pth"
     )
     predictor = predictor.to(device)
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     for task in tqdm.tqdm(batches):
         predictor.infer_pdb(task["chains"], filename=task["output"])
@@ -86,8 +81,6 @@ def test_pmhc_example():
         trunk_path="checkpoints/tfold_pmhc_trunk.pth"
     )
     predictor = predictor.to(device)
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     for task in tqdm.tqdm(batches):
         predictor.infer_pdb(task["chains"], filename=task["output"])
@@ -116,9 +109,6 @@ def test_fasta():
         trunk_path=tfold_tcr_pmhc_trunk()
     )
     predictor.to(device)
-
-    if torch.cuda.is_bf16_supported():
-        predictor.to(torch.bfloat16)
 
     for task in tqdm.tqdm(batches):
         predictor.infer_pdb(task["chains"], filename=task["output"], chunk_size=256)
