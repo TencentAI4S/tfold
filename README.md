@@ -337,7 +337,7 @@ ppi_model_path = tfold.model.esm_ppi_650m_tcr()
 tfold_model_path = tfold.model.tfold_tcr_pmhc_trunk()
 
 # Load the model
-model = tfold.deploy.TCRpMHCPredictor.restore_from_module(ppi_model_path, tfold_model_path)
+model = tfold.deploy.TCRpMHCPredictor(ppi_model_path, tfold_model_path)
 
 # Prepare TCR-pMHC sequences
 data =[
