@@ -214,6 +214,15 @@ data = [
 ppi_output = model(data)
 
 ```
+The output keys are `(['labl', 'mask', 'pred', 'sfea', 'pfea'])`.
+
+Each key in the outputs dictionary represents a different component of the model's output:  
+* 'labl': Original token indices from tokn_mat_orig that represent the unmasked (original) amino acid sequences. These serve as ground truth labels for training.  
+* 'mask': Binary mask tensor indicating which positions were masked during inference. It's used to identify which positions should be predicted in the masked language modeling task.  
+* 'pred': The model's logits (raw prediction scores before softmax) for each position in the sequence. These are the actual predictions made by the model.  
+* 'sfea': Single-residue features/embeddings extracted from the final layer representations. These are residue-level embeddings with dimension self.c_s for each amino acid position. 
+* 'pfea': Pair features representing interactions between residues, derived from attention weights. These capture the relationships between each pair of residues in the sequence with dimension self.c_z. 
+
 ### Predict antibody structures with tFold-Ab
 ```shell
 import torch
