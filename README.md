@@ -189,6 +189,14 @@ python projects/tfold_tcr/predict.py --json examples/tcr_pmhc_example.json --out
 ```
 
 ## Quick Start with Pip Installation
+
+Direct installation from pypi:
+
+```shell
+  pip install tfold
+```
+or install from source code:
+
 ```shell
   cd tfold
   pip install .
